@@ -7,7 +7,7 @@ public class SendBulkModel {
 
     private String id;
     private String recipientPhoneNumber;
-    private ArrayList<String> message;
+    private SendModel[] sendModels;
     private String status;
     private LocalDateTime timestamp;
 
@@ -15,7 +15,7 @@ public class SendBulkModel {
     private SendBulkModel(Builder builder) {
         this.id = builder.id;
         this.recipientPhoneNumber = builder.recipientPhoneNumber;
-        this.message = builder.message;
+        this.sendModels = builder.sendModels;
         this.status = builder.status;
         this.timestamp = builder.timestamp;
     }
@@ -23,7 +23,7 @@ public class SendBulkModel {
     public static class Builder {
         private String id;
         private String recipientPhoneNumber;
-        private ArrayList<String> message;
+        private SendModel[] sendModels;
         private String status;
         private LocalDateTime timestamp;
 
@@ -36,8 +36,13 @@ public class SendBulkModel {
             this.recipientPhoneNumber = recipientPhoneNumber;
         }
 
-        public void message(ArrayList<String> message) {
-            this.message = message;
+        public void messages(String[] messages) {
+            this.sendModels = new SendModel[messages.length];
+            for (int a = 0; a < messages.length; a++) {
+                this.sendModels[a] = new SendModel.Builder().message(messages[a]).build();
+                this
+            }
+            this.sendModels = message;
         }
 
         public void status(String status) {
@@ -63,8 +68,11 @@ public class SendBulkModel {
         return recipientPhoneNumber;
     }
 
-    public ArrayList<String> getMessage() {
-        return message;
+    public ArrayList<SendModel> getMessages() {
+        return sendModels;
+    }
+    public SendModel getMessage(int index) {
+        return sendModels.get(index);
     }
 
     public String getStatus() {
@@ -73,5 +81,25 @@ public class SendBulkModel {
 
     public LocalDateTime getTimestamp() {
         return timestamp;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setRecipientPhoneNumber(String recipientPhoneNumber) {
+        this.recipientPhoneNumber = recipientPhoneNumber;
+    }
+
+    public void setSendModels(SendModel[] sendModels) {
+        this.sendModels = sendModels;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 }

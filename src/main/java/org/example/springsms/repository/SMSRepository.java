@@ -1,8 +1,9 @@
 package org.example.springsms.repository;
 
+import org.example.springsms.model.SendModel;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class SMSRepository {
-    // FIXME i think this needs to be interface
+public interface SMSRepository extends MongoRepository<SendModel, String> {
 }

@@ -26,6 +26,7 @@ public class SendModel {
         private LocalDateTime timestamp;
 
 
+
         public void id(String id) {
             this.id = id;
         }
@@ -62,7 +63,7 @@ public class SendModel {
         return recipientPhoneNumber;
     }
 
-    public String getMessage() {
+    public SendModel getMessage() {
         return message;
     }
 
@@ -72,5 +73,25 @@ public class SendModel {
 
     public LocalDateTime getTimestamp() {
         return timestamp;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setRecipientPhoneNumber(String recipientPhoneNumber) {
+        this.recipientPhoneNumber = recipientPhoneNumber;
+    }
+
+    public void setMessage(SendModel message) {
+        this.message = message;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 }
