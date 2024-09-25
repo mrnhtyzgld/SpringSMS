@@ -54,5 +54,23 @@ public class SendModel {
     }
 
 
+    public String getId() {
+        return id;
+    }
 
+    public String getRecipientPhoneNumber() {
+        return recipientPhoneNumber;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
 }
