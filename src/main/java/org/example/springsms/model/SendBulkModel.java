@@ -1,7 +1,6 @@
 package org.example.springsms.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 public class SendBulkModel {
 
@@ -10,6 +9,7 @@ public class SendBulkModel {
     private SendModel[] sendModels;
     private String status;
     private LocalDateTime timestamp;
+    public final int MESSAGE_COUNT;
 
 
     private SendBulkModel(Builder builder) {
@@ -18,6 +18,7 @@ public class SendBulkModel {
         this.sendModels = builder.sendModels;
         this.status = builder.status;
         this.timestamp = builder.timestamp;
+        this.MESSAGE_COUNT = builder.messageCount;
     }
 
     public static class Builder {
@@ -26,35 +27,49 @@ public class SendBulkModel {
         private SendModel[] sendModels;
         private String status;
         private LocalDateTime timestamp;
+        private int messageCount;
 
 
-        public void id(String id) {
+        public Builder id(String id) {
             this.id = id;
+            return this;
         }
 
-        public void recipientPhoneNumber(String recipientPhoneNumber) {
+        public Builder recipientPhoneNumber(String recipientPhoneNumber) {
             this.recipientPhoneNumber = recipientPhoneNumber;
+            return this;
         }
 
-        public void messages(String[] messages) {
+        public Builder messages(String[] messages) {
             this.sendModels = new SendModel[messages.length];
             for (int a = 0; a < messages.length; a++) {
                 this.sendModels[a] = new SendModel.Builder().message(messages[a]).build();
-                this
             }
-            this.sendModels = message;
+            return this;
         }
 
-        public void status(String status) {
+        public Builder status(String status) {
             this.status = status;
+            return this;
         }
 
-        public void timestamp(LocalDateTime timestamp) {
+        public Builder timestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
+            return this;
         }
 
         public SendBulkModel build() {
             // FIXME error handling
+            
+            for (SendModel insideModel : sendModels) {
+                insideModel.setTimestamp(timestamp);
+                insideModel.setStatus(status);
+                insideModel.setRecipientPhoneNumber(recipientPhoneNumber);
+                insideModel.setId(id);
+            }
+            
+            this.messageCount = sendModels.length;
+            
 
             return new SendBulkModel(this);
         }
@@ -68,11 +83,14 @@ public class SendBulkModel {
         return recipientPhoneNumber;
     }
 
-    public ArrayList<SendModel> getMessages() {
+    public SendModel[] getSendModels() {
         return sendModels;
     }
-    public SendModel getMessage(int index) {
-        return sendModels.get(index);
+    public SendModel getSendModel(int index) {
+        return sendModels[index];
+    }
+    public String getMessage(int index) {
+        return sendModels[index].getMessage();
     }
 
     public String getStatus() {
@@ -95,6 +113,7 @@ public class SendBulkModel {
         this.sendModels = sendModels;
     }
 
+
     public void setStatus(String status) {
         this.status = status;
     }
@@ -102,4 +121,5 @@ public class SendBulkModel {
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
+
 }

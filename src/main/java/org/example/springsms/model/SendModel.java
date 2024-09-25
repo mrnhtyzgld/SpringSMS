@@ -27,24 +27,29 @@ public class SendModel {
 
 
 
-        public void id(String id) {
+        public Builder id(String id) {
             this.id = id;
+            return this;
         }
 
-        public void recipientPhoneNumber(String recipientPhoneNumber) {
+        public Builder recipientPhoneNumber(String recipientPhoneNumber) {
             this.recipientPhoneNumber = recipientPhoneNumber;
+            return this;
         }
 
-        public void message(String message) {
+        public Builder message(String message) {
             this.message = message;
+            return this;
         }
 
-        public void status(String status) {
+        public Builder status(String status) {
             this.status = status;
+            return this;
         }
 
-        public void timestamp(LocalDateTime timestamp) {
+        public Builder timestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
+            return this;
         }
 
         public SendModel build() {
@@ -63,7 +68,7 @@ public class SendModel {
         return recipientPhoneNumber;
     }
 
-    public SendModel getMessage() {
+    public String getMessage() {
         return message;
     }
 
@@ -83,7 +88,7 @@ public class SendModel {
         this.recipientPhoneNumber = recipientPhoneNumber;
     }
 
-    public void setMessage(SendModel message) {
+    public void setMessage(String message) {
         this.message = message;
     }
 

@@ -41,21 +41,26 @@ public class SmsService {
         if (! isValidPhoneNumber(sendBulkModel.getRecipientPhoneNumber())) {
             throw new NotificationException("recipient phone number is invalid");
         }
-        for (SendModel message : sendBulkModel.getMessages()) {
-            if (! isValidMessage(message)) {
+        for (int a = 0; a < sendBulkModel.MESSAGE_COUNT; a++) {
+            if (! isValidMessage(sendBulkModel.getMessage(a))) {
                 throw new NotificationException("message is invalid");
             }
         }
-
-        for (SendModel message : sendBulkModel.getMessages()) {
-            if ()
+        try {
+            for (int a = 0; a < sendBulkModel.MESSAGE_COUNT; a++) {
+                smsRepository.save(sendBulkModel.getSendModel(a));
+            }
+        } catch (DataAccessException e) {
+            throw new NotificationException("Failed to save SMS to the database");
+            // FIXME fail durumunda diğer smsleri de eklememe "transaction" muhabbeti
         }
+
     }
 
     private boolean isValidPhoneNumber(String phoneNumber) {
         return phoneNumber != null && phoneNumber.matches("[0-9]{10}");
     }
-    private boolean isValidMessage(SendModel message) {
+    private boolean isValidMessage(String message) {
         if (message == null) return false;
         if (message.length() > MAX_MSG_LENGTH) return false;
         if (message.isEmpty()) return false;
