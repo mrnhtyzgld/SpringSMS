@@ -30,8 +30,9 @@ class SmsServiceTest {
     void testSendSmsSuccessfully() {
         // Arrange
         SendModel sms = new SendModel.Builder()
-                .recipientPhoneNumber("5551234567")
+                .recipientPhoneNumber("1".repeat(10))
                 .message("Hello!")
+
                 .build();
 
         // Act

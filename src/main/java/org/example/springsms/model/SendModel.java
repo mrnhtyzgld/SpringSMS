@@ -1,8 +1,11 @@
 package org.example.springsms.model;
 
+import org.springframework.data.annotation.Id;
+
 import java.time.LocalDateTime;
 
 public class SendModel {
+    @Id
     private String id;
     private String recipientPhoneNumber;
     private String message;

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class SmsService {
 
@@ -16,7 +18,15 @@ public class SmsService {
     @Autowired
     private SMSRepository smsRepository;
 
-    public void sendSms(SendModel sendModel) {
+    public void sendSms(String phoneNumber, String message) {
+        SendModel sendModel = new SendModel.Builder()
+                .recipientPhoneNumber(phoneNumber)
+                .message(message)
+                .status("PENDING")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+
         if (! isValidSendModel(sendModel)) {
             throw new NotificationException("sendModel is not instantiated correctly or null");  // FIXME shouldnt send to client
         }
@@ -33,7 +43,13 @@ public class SmsService {
         }
     }
 
-    public void sendBulkSms(SendBulkModel sendBulkModel) {
+    public void sendBulkSms(String[] phoneNumbers, String message) {
+        SendBulkModel sendBulkModel = new SendBulkModel.Builder()
+                .recipientPhoneNumbers(phoneNumbers)
+                .message(message)
+                .status("PENDING")
+                .timestamp(LocalDateTime.now())
+                .build();
 
         if (! isValidSendBulkModel(sendBulkModel)) {
             throw new NotificationException("sendBulkModel is is not instantiated correctly or null");  // FIXME shouldnt send to client

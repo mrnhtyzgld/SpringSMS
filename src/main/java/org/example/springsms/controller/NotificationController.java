@@ -1,5 +1,7 @@
 package org.example.springsms.controller;
 
+import org.example.springsms.dto.SendBulkDto;
+import org.example.springsms.dto.SendDto;
 import org.example.springsms.model.SendBulkModel;
 import org.example.springsms.model.SendModel;
 import org.example.springsms.service.SmsService;
@@ -16,14 +18,14 @@ public class NotificationController {
     private SmsService smsService;
 
     @PostMapping("/send")
-    public ResponseEntity<String> sendSms(@RequestBody SendModel sendModel) {
-        smsService.sendSms(sendModel); // Servis katmanına yönlendirme
+    public ResponseEntity<String> sendSms(@RequestBody SendDto sendDto) {
+        smsService.sendSms(sendDto.getPhoneNumber(), sendDto.getMessage()); // Servis katmanına yönlendirme
         return new ResponseEntity<>("SMS sent successfully.", HttpStatus.OK);
     }
 
     @PostMapping("/send-bulk")
-    public ResponseEntity<String> sendBulkSms(@RequestBody SendBulkModel sendBulkModel) {
-        smsService.sendBulkSms(sendBulkModel); // Servis katmanına yönlendirme
+    public ResponseEntity<String> sendBulkSms(@RequestBody SendBulkDto sendBulkDto) {
+        smsService.sendBulkSms(sendBulkDto.getPhoneNumbers(), sendBulkDto.getMessage()); // Servis katmanına yönlendirme
         return new ResponseEntity<>("Bulk SMS sent successfully.", HttpStatus.OK);
     }
 }
