@@ -38,16 +38,18 @@ public class SmsService {
         if (! isValidSendBulkModel(sendBulkModel)) {
             throw new NotificationException("sendBulkModel is is not instantiated correctly or null");  // FIXME shouldnt send to client
         }
-        if (! isValidPhoneNumber(sendBulkModel.getRecipientPhoneNumber())) {
-            throw new NotificationException("recipient phone number is invalid");
-        }
-        for (int a = 0; a < sendBulkModel.MESSAGE_COUNT; a++) {
-            if (! isValidMessage(sendBulkModel.getMessage(a))) {
-                throw new NotificationException("message is invalid");
+        for (int a = 0; a < sendBulkModel.RECIPIENT_COUNT; a++) {
+            if (!isValidPhoneNumber(sendBulkModel.getSendModel(a).getRecipientPhoneNumber())) {
+
+                throw new NotificationException("recipient phone number is invalid");
             }
         }
+        if (! isValidMessage(sendBulkModel.getMessage())) {
+            throw new NotificationException("message is invalid");
+        }
+
         try {
-            for (int a = 0; a < sendBulkModel.MESSAGE_COUNT; a++) {
+            for (int a = 0; a < sendBulkModel.RECIPIENT_COUNT; a++) {
                 smsRepository.save(sendBulkModel.getSendModel(a));
             }
         } catch (DataAccessException e) {
