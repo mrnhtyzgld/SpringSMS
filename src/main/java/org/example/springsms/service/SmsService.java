@@ -29,7 +29,6 @@ public class SmsService {
                 .build();
 
 
-
         if (! isValidPhoneNumber(sendModel.getRecipientPhoneNumber())) {
             throw new NotificationException("recipient phone number is invalid");
         }
@@ -62,9 +61,7 @@ public class SmsService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        if (! isValidSendBulkModel(sendBulkModel)) {
-            throw new NotificationException("sendBulkModel is is not instantiated correctly or null");  // FIXME shouldnt send to client
-        }
+
         for (int a = 0; a < sendBulkModel.RECIPIENT_COUNT; a++) {
             if (!isValidPhoneNumber(sendBulkModel.getSendModel(a).getRecipientPhoneNumber())) {
 
@@ -104,26 +101,6 @@ public class SmsService {
         if (message == null) return false;
         if (message.length() > MAX_MSG_LENGTH) return false;
         if (message.isEmpty()) return false;
-
-        return true;
-    }
-    private boolean isValidSendModel(SendModel sendModel) {
-        if (sendModel == null) return false;
-        if (sendModel.getId() == null) return false;
-        if (sendModel.getStatus() == null) return false;
-        if (sendModel.getTimestamp() == null) return false;
-
-        return true;
-    }
-
-    // FIXME do i even need these?
-    private boolean isValidSendBulkModel(SendBulkModel sendBulkModel) {
-        if (sendBulkModel == null) return false;
-        if (sendBulkModel.getId() == null) return false;
-        if (sendBulkModel.getStatus() == null) return false;
-        if (sendBulkModel.getTimestamp() == null) return false;
-        if (sendBulkModel.getSendModels() == null || sendBulkModel.getSendModels().length == 0) return false;
-        if (sendBulkModel.getMessage() == null || sendBulkModel.getMessage().isEmpty()) return false;
 
         return true;
     }
