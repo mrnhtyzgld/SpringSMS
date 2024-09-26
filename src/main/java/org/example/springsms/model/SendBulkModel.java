@@ -5,29 +5,29 @@ import java.time.LocalDateTime;
 public class SendBulkModel {
 
     private String id;
-    private String recipientPhoneNumber;
+    private String message;
     private SendModel[] sendModels;
     private String status;
     private LocalDateTime timestamp;
-    public final int MESSAGE_COUNT;
+    public final int RECIPIENT_COUNT;
 
 
     private SendBulkModel(Builder builder) {
         this.id = builder.id;
-        this.recipientPhoneNumber = builder.recipientPhoneNumber;
+        this.message = builder.message;
         this.sendModels = builder.sendModels;
         this.status = builder.status;
         this.timestamp = builder.timestamp;
-        this.MESSAGE_COUNT = builder.messageCount;
+        this.RECIPIENT_COUNT = builder.recipientCount;
     }
 
     public static class Builder {
         private String id;
-        private String recipientPhoneNumber;
+        private String message;
         private SendModel[] sendModels;
         private String status;
         private LocalDateTime timestamp;
-        private int messageCount;
+        private int recipientCount;
 
 
         public Builder id(String id) {
@@ -35,16 +35,17 @@ public class SendBulkModel {
             return this;
         }
 
-        public Builder recipientPhoneNumber(String recipientPhoneNumber) {
-            this.recipientPhoneNumber = recipientPhoneNumber;
+        public Builder recipientPhoneNumbers(String[] recipientPhoneNumbers) {
+            this.sendModels = new SendModel[recipientPhoneNumbers.length];
+            for (int a = 0; a < recipientPhoneNumbers.length; a++) {
+                this.sendModels[a] = new SendModel.Builder().recipientPhoneNumber(recipientPhoneNumbers[a]).build();
+            }
+
             return this;
         }
 
-        public Builder messages(String[] messages) {
-            this.sendModels = new SendModel[messages.length];
-            for (int a = 0; a < messages.length; a++) {
-                this.sendModels[a] = new SendModel.Builder().message(messages[a]).build();
-            }
+        public Builder message(String message) {
+            this.message = message;
             return this;
         }
 
@@ -62,64 +63,41 @@ public class SendBulkModel {
             // FIXME error handling
             
             for (SendModel insideModel : sendModels) {
+                insideModel.setMessage(message);
                 insideModel.setTimestamp(timestamp);
                 insideModel.setStatus(status);
-                insideModel.setRecipientPhoneNumber(recipientPhoneNumber);
                 insideModel.setId(id);
             }
             
-            this.messageCount = sendModels.length;
+            this.recipientCount = sendModels.length;
             
 
             return new SendBulkModel(this);
         }
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getRecipientPhoneNumber() {
-        return recipientPhoneNumber;
-    }
-
-    public SendModel[] getSendModels() {
-        return sendModels;
-    }
-    public SendModel getSendModel(int index) {
-        return sendModels[index];
-    }
-    public String getMessage(int index) {
-        return sendModels[index].getMessage();
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public String getMessage() {
+        return message;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getId() {
+        return id;
     }
 
-    public void setRecipientPhoneNumber(String recipientPhoneNumber) {
-        this.recipientPhoneNumber = recipientPhoneNumber;
+    public SendModel[] getSendModels() {
+        return sendModels;
     }
 
-    public void setSendModels(SendModel[] sendModels) {
-        this.sendModels = sendModels;
-    }
-
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public SendModel getSendModel(int id) {
+        return sendModels[id];
     }
 
 }

@@ -53,8 +53,6 @@ public class SendModel {
         }
 
         public SendModel build() {
-            // FIXME error handling
-
             return new SendModel(this);
         }
     }
