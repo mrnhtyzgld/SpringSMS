@@ -1,8 +1,8 @@
 package org.example.springsms.exception;
 
 public class NotificationException extends RuntimeException {
-    public NotificationException(String message) {
-        super(message);
+    public NotificationException(String dataType) {
+        super(dataType + " is invalid.");
         // FIXME parametrelerle oyna
     }
 }

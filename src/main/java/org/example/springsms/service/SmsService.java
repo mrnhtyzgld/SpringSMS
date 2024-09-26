@@ -1,5 +1,6 @@
 package org.example.springsms.service;
 
+import org.example.springsms.exception.DatabaseException;
 import org.example.springsms.exception.NotificationException;
 import org.example.springsms.model.NotificationStatus;
 import org.example.springsms.model.SendBulkModel;
@@ -30,10 +31,10 @@ public class SmsService {
 
 
         if (! isValidPhoneNumber(sendModel.getRecipientPhoneNumber())) {
-            throw new NotificationException("recipient phone number is invalid");
+            throw new NotificationException("recipientPhoneNumber");
         }
         if (! isValidMessage(sendModel.getMessage())) {
-            throw new NotificationException("message is invalid");
+            throw new NotificationException("message");
         }
 
         boolean succeess = sendApi(sendModel);
@@ -46,9 +47,9 @@ public class SmsService {
         }
 
         try {
-            trySavingToRepository(sendModel,MAX_ATTEMPTS);
+            trySavingToRepository(sendModel, MAX_ATTEMPTS);
         } catch (DataAccessException e) {
-            throw new NotificationException("Failed to save SMS to the database"); // TODO change the explanation
+            throw new DatabaseException(); // TODO change the explanation
         }
 
     }
@@ -65,11 +66,11 @@ public class SmsService {
         for (int a = 0; a < sendBulkModel.RECIPIENT_COUNT; a++) {
             if (!isValidPhoneNumber(sendBulkModel.getSendModel(a).getRecipientPhoneNumber())) {
 
-                throw new NotificationException("recipient phone number is invalid");
+                throw new NotificationException("recipientPhoneNumber");
             }
         }
         if (! isValidMessage(sendBulkModel.getMessage())) {
-            throw new NotificationException("message is invalid");
+            throw new NotificationException("message");
         }
 
         try {
@@ -77,7 +78,7 @@ public class SmsService {
                 smsRepository.save(sendBulkModel.getSendModel(a));
             }
         } catch (DataAccessException e) {
-            throw new NotificationException("Failed to save SMS to the database");
+            throw new DatabaseException();
         }
 
     }
@@ -89,7 +90,7 @@ public class SmsService {
         try {
             smsRepository.save(sendModel);
         } catch (DataAccessException e) {
-            throw new NotificationException("Failed to save SMS to the database");
+            throw new DatabaseException();
         }
 
     }
@@ -108,6 +109,7 @@ public class SmsService {
     private boolean sendApi(SendModel sm) {
         // api
 
-        return (Math.random() > 0.5);
+        return true;
+        //return (Math.random() > 0.5);
     }
 }
