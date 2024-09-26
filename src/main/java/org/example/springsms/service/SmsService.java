@@ -1,6 +1,7 @@
 package org.example.springsms.service;
 
 import org.example.springsms.exception.NotificationException;
+import org.example.springsms.model.NotificationStatus;
 import org.example.springsms.model.SendBulkModel;
 import org.example.springsms.model.SendModel;
 import org.example.springsms.repository.SMSRepository;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 public class SmsService {
 
     public static final int MAX_MSG_LENGTH = 60;
+    public static final int MAX_ATTEMPTS = 5;
 
     @Autowired
     private SMSRepository smsRepository;
@@ -22,32 +24,41 @@ public class SmsService {
         SendModel sendModel = new SendModel.Builder()
                 .recipientPhoneNumber(phoneNumber)
                 .message(message)
-                .status("PENDING")
+                .status(NotificationStatus.PENDING)
                 .timestamp(LocalDateTime.now())
                 .build();
 
 
-        if (! isValidSendModel(sendModel)) {
-            throw new NotificationException("sendModel is not instantiated correctly or null");  // FIXME shouldnt send to client
-        }
+
         if (! isValidPhoneNumber(sendModel.getRecipientPhoneNumber())) {
             throw new NotificationException("recipient phone number is invalid");
         }
         if (! isValidMessage(sendModel.getMessage())) {
             throw new NotificationException("message is invalid");
         }
-        try {
-            smsRepository.save(sendModel);
-        } catch (DataAccessException e) {
-            throw new NotificationException("Failed to save SMS to the database");
+
+        boolean succeess = sendApi(sendModel);
+
+        if (succeess) {
+            sendModel.setStatus(NotificationStatus.SENT);
         }
+        else {
+            sendModel.setStatus(NotificationStatus.FAILED);
+        }
+
+        try {
+            trySavingToRepository(sendModel,MAX_ATTEMPTS);
+        } catch (DataAccessException e) {
+            throw new NotificationException("Failed to save SMS to the database"); // TODO change the explanation
+        }
+
     }
 
     public void sendBulkSms(String[] phoneNumbers, String message) {
         SendBulkModel sendBulkModel = new SendBulkModel.Builder()
                 .recipientPhoneNumbers(phoneNumbers)
                 .message(message)
-                .status("PENDING")
+                .status(NotificationStatus.PENDING)
                 .timestamp(LocalDateTime.now())
                 .build();
 
@@ -70,7 +81,18 @@ public class SmsService {
             }
         } catch (DataAccessException e) {
             throw new NotificationException("Failed to save SMS to the database");
-            // FIXME fail durumunda diğer smsleri de eklememe "transaction" muhabbeti
+        }
+
+    }
+
+    private void trySavingToRepository(SendModel sendModel, int maxAttempts) {
+        // TODO after async try writing this
+        // TODO note that this method can fail also
+
+        try {
+            smsRepository.save(sendModel);
+        } catch (DataAccessException e) {
+            throw new NotificationException("Failed to save SMS to the database");
         }
 
     }
@@ -93,12 +115,22 @@ public class SmsService {
 
         return true;
     }
+
+    // FIXME do i even need these?
     private boolean isValidSendBulkModel(SendBulkModel sendBulkModel) {
         if (sendBulkModel == null) return false;
         if (sendBulkModel.getId() == null) return false;
         if (sendBulkModel.getStatus() == null) return false;
         if (sendBulkModel.getTimestamp() == null) return false;
+        if (sendBulkModel.getSendModels() == null || sendBulkModel.getSendModels().length == 0) return false;
+        if (sendBulkModel.getMessage() == null || sendBulkModel.getMessage().isEmpty()) return false;
 
         return true;
+    }
+
+    private boolean sendApi(SendModel sm) {
+        // api
+
+        return (Math.random() > 0.5);
     }
 }

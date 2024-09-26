@@ -10,7 +10,7 @@ public class SendBulkModel {
     private String id;
     private String message;
     private SendModel[] sendModels;
-    private String status;
+    private NotificationStatus status;
     private LocalDateTime timestamp;
     public final int RECIPIENT_COUNT;
 
@@ -28,7 +28,7 @@ public class SendBulkModel {
         private String id;
         private String message;
         private SendModel[] sendModels;
-        private String status;
+        private NotificationStatus status;
         private LocalDateTime timestamp;
         private int recipientCount;
 
@@ -52,7 +52,7 @@ public class SendBulkModel {
             return this;
         }
 
-        public Builder status(String status) {
+        public Builder status(NotificationStatus status) {
             this.status = status;
             return this;
         }
@@ -63,8 +63,7 @@ public class SendBulkModel {
         }
 
         public SendBulkModel build() {
-            // FIXME error handling
-            
+
             for (SendModel insideModel : sendModels) {
                 insideModel.setMessage(message);
                 insideModel.setTimestamp(timestamp);
@@ -83,7 +82,7 @@ public class SendBulkModel {
         return timestamp;
     }
 
-    public String getStatus() {
+    public NotificationStatus getStatus() {
         return status;
     }
 

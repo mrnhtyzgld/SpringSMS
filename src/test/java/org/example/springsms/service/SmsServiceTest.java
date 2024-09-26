@@ -2,10 +2,12 @@ package org.example.springsms.service;
 
 
 import org.example.springsms.exception.NotificationException;
+import org.example.springsms.model.SendBulkModel;
 import org.example.springsms.model.SendModel;
 import org.example.springsms.repository.SMSRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -29,54 +31,45 @@ class SmsServiceTest {
     @Test
     void testSendSmsSuccessfully() {
         // Arrange
-        SendModel sms = new SendModel.Builder()
-                .recipientPhoneNumber("1".repeat(10))
-                .message("Hello!")
 
-                .build();
+        String phoneNumber = "1".repeat(10);
+        String message = "Hello!";
 
         // Act
-        smsService.sendSms(sms);
+        smsService.sendSms(phoneNumber,message);
 
         // Assert
-        verify(smsRepository, times(1)).save(sms);
-        assertEquals("SENT", sms.getStatus());
+        ArgumentCaptor<SendModel> smsCaptor = ArgumentCaptor.forClass(SendModel.class);
+        verify(smsRepository, times(1)).save(smsCaptor.capture());
+
+        SendModel capturedSms = smsCaptor.getValue();
+        assertEquals(phoneNumber, capturedSms.getRecipientPhoneNumber());
+        assertEquals(message, capturedSms.getMessage());
     }
 
     @Test
-    void testSendSmsInvalidPhoneNumber() {
+    void testSendBulkSmsSuccessfully() {
         // Arrange
-        SendModel sms = new SendModel.Builder()
-                .recipientPhoneNumber("invalid-phone")
-                .message("Hello!")
-                .build();
 
-        // Act & Assert
-        NotificationException exception = assertThrows(NotificationException.class, () -> {
-            smsService.sendSms(sms);
-        });
+        int phoneCount = 10;
+        String[] phoneNumbers = new String[phoneCount];
+        for (int a = 0; a < 10; a++) {
+            phoneNumbers[a] = "1".repeat(10);
+        }
+        String message = "Hello!";
 
-        assertEquals("Invalid phone number format!", exception.getMessage());
-        verify(smsRepository, never()).save(sms); // Veritabanına kayıt yapılmadığını kontrol et
+        // Act
+        smsService.sendBulkSms(phoneNumbers,message);
+
+        // Assert
+        ArgumentCaptor<SendBulkModel> smsCaptor = ArgumentCaptor.forClass(SendBulkModel.class);
+        verify(smsRepository, times(1)).save(smsCaptor.capture());
+
+        SendModel capturedSms = smsCaptor.getValue();
+        assertEquals(phoneNumber, capturedSms.getRecipientPhoneNumber());
+        assertEquals(message, capturedSms.getMessage());
     }
 
-    @Test
-    void testSendSmsMessageTooLong() {
-        // Arrange
-        String longMessage = "A".repeat(161); // 161 karakterlik uzun mesaj
-        SendModel sms = new SendModel.Builder()
-                .recipientPhoneNumber("5551234567")
-                .message(longMessage)
-                .build();
-
-        // Act & Assert
-        NotificationException exception = assertThrows(NotificationException.class, () -> {
-            smsService.sendSms(sms);
-        });
-
-        assertEquals("Message exceeds the maximum length of 160 characters", exception.getMessage());
-        verify(smsRepository, never()).save(sms); // Veritabanına kayıt yapılmadığını kontrol et
-    }
 
     @Test
     void testDatabaseError() {

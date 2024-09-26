@@ -9,7 +9,7 @@ public class SendModel {
     private String id;
     private String recipientPhoneNumber;
     private String message;
-    private String status;
+    private NotificationStatus status;
     private LocalDateTime timestamp;
 
 
@@ -25,7 +25,7 @@ public class SendModel {
         private String id;
         private String recipientPhoneNumber;
         private String message;
-        private String status;
+        private NotificationStatus status;
         private LocalDateTime timestamp;
 
 
@@ -45,7 +45,7 @@ public class SendModel {
             return this;
         }
 
-        public Builder status(String status) {
+        public Builder status(NotificationStatus status) {
             this.status = status;
             return this;
         }
@@ -73,7 +73,7 @@ public class SendModel {
         return message;
     }
 
-    public String getStatus() {
+    public NotificationStatus getStatus() {
         return status;
     }
 
@@ -93,7 +93,7 @@ public class SendModel {
         this.message = message;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(NotificationStatus status) {
         this.status = status;
     }
 
