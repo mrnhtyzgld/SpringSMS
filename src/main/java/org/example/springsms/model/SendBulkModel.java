@@ -12,16 +12,45 @@ public class SendBulkModel {
     private SendModel[] sendModels;
     private NotificationStatus status;
     private LocalDateTime timestamp;
-    public final int RECIPIENT_COUNT;
+    private int recipientCount;
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setSendModels(SendModel[] sendModels) {
+        this.sendModels = sendModels;
+    }
+
+    public void setStatus(NotificationStatus status) {
+        this.status = status;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public void setRecipientCount(int recipientCount) {
+        this.recipientCount = recipientCount;
+    }
+
+    public SendBulkModel() {}
     private SendBulkModel(Builder builder) {
         this.id = builder.id;
         this.message = builder.message;
         this.sendModels = builder.sendModels;
         this.status = builder.status;
         this.timestamp = builder.timestamp;
-        this.RECIPIENT_COUNT = builder.recipientCount;
+        this.recipientCount = builder.recipientCount;
+    }
+
+    public int getRecipientCount() {
+        recipientCount = sendModels.length;
+        return recipientCount;
     }
 
     public static class Builder {

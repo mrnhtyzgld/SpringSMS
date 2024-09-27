@@ -64,7 +64,7 @@ public class SmsService {
                 .build();
 
 
-        for (int a = 0; a < sendBulkModel.RECIPIENT_COUNT; a++) {
+        for (int a = 0; a < sendBulkModel.getRecipientCount(); a++) {
             if (!isValidPhoneNumber(sendBulkModel.getSendModel(a).getRecipientPhoneNumber())) {
 
                 throw new NotificationException("recipientPhoneNumber");
@@ -75,7 +75,7 @@ public class SmsService {
         }
 
         try {
-            for (int a = 0; a < sendBulkModel.RECIPIENT_COUNT; a++) {
+            for (int a = 0; a < sendBulkModel.getRecipientCount(); a++) {
                 smsRepository.save(sendBulkModel.getSendModel(a));
             }
         } catch (DataAccessException e) {
