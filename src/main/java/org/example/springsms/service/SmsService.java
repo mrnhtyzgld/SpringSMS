@@ -37,8 +37,9 @@ public class SmsService {
             throw new NotificationException("message");
         }
 
-        boolean succeess = sendApi(sendModel);
 
+        boolean succeess = sendApi(sendModel);
+        
         if (succeess) {
             sendModel.setStatus(NotificationStatus.SENT);
         }
@@ -78,7 +79,7 @@ public class SmsService {
                 smsRepository.save(sendBulkModel.getSendModel(a));
             }
         } catch (DataAccessException e) {
-            throw new DatabaseException();
+            throw new DatabaseException(e.getMessage()+"\n"+e.getCause()+"\n"+e.fillInStackTrace());
         }
 
     }
@@ -90,7 +91,7 @@ public class SmsService {
         try {
             smsRepository.save(sendModel);
         } catch (DataAccessException e) {
-            throw new DatabaseException();
+            throw new DatabaseException(e.getMessage()+"\n"+e.getCause()+"\n"+e.fillInStackTrace());
         }
 
     }
@@ -106,7 +107,7 @@ public class SmsService {
         return true;
     }
 
-    private boolean sendApi(SendModel sm) {
+    public boolean sendApi(SendModel sm) {
         // api
 
         return true;
