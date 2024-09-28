@@ -8,9 +8,11 @@ import org.example.springsms.model.SendModel;
 import org.example.springsms.repository.SMSRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class SmsService {
@@ -21,7 +23,8 @@ public class SmsService {
     @Autowired
     private SMSRepository smsRepository;
 
-    public void sendSms(String phoneNumber, String message) {
+    @Async
+    public CompletableFuture<Void> sendSms(String phoneNumber, String message) {
         SendModel sendModel = new SendModel.Builder()
                 .recipientPhoneNumber(phoneNumber)
                 .message(message)
@@ -40,8 +43,6 @@ public class SmsService {
 
         boolean success = sendApi(sendModel);
 
-        if (success) System.out.println("success on bulk method");
-        if (!success) System.out.println("fail on bulk method");
 
 
         if (success) {
@@ -52,18 +53,16 @@ public class SmsService {
         }
 
         try {
-            System.out.println("saving to repo");
-
             trySavingToRepository(sendModel, MAX_ATTEMPTS);
-            System.out.println("saved to repo");
-
         } catch (DataAccessException e) {
             throw new DatabaseException(); // TODO change the explanation
         }
-
+        return CompletableFuture.completedFuture(null);
     }
 
-    public void sendBulkSms(String[] phoneNumbers, String message) {
+    @Async
+    public CompletableFuture<Void> sendBulkSms(String[] phoneNumbers, String message) {
+        // FIXME async for loops
         SendBulkModel sendBulkModel = new SendBulkModel.Builder()
                 .recipientPhoneNumbers(phoneNumbers)
                 .message(message)
@@ -108,6 +107,7 @@ public class SmsService {
             }
             System.out.println(sendModel.getStatus());
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     private void trySavingToRepository(SendModel sendModel, int maxAttempts) {

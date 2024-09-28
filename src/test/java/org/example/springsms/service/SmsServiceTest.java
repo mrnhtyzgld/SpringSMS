@@ -110,7 +110,6 @@ class SmsServiceTest {
             });
 
             assertEquals(exception.getMessage(), msgErr);
-            System.out.println("bulk message test passed!");
         }
     }
 
@@ -134,7 +133,7 @@ class SmsServiceTest {
                 });
 
                 assertEquals(exception.getMessage(), numErr);
-                System.out.println("bulk phone number test passed!");
+
             }
         }
 
@@ -158,7 +157,6 @@ class SmsServiceTest {
             SendModel capturedSms = smsCaptor.getValue();
             assertEquals(phoneNumber, capturedSms.getRecipientPhoneNumber());
             assertEquals(message, capturedSms.getMessage());
-            System.out.println("succesfull!");
         }
     }
     /*

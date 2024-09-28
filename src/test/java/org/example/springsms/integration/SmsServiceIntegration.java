@@ -20,8 +20,13 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
@@ -36,7 +41,7 @@ public class SmsServiceIntegration {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 
-    @Autowired
+    @SpyBean
     private SmsService smsService;
 
     @Autowired
@@ -54,7 +59,14 @@ public class SmsServiceIntegration {
         String message = "Test message";
 
         // Send an SMS and validate that it was sent successfully
-        smsService.sendSms(phoneNumber, message);
+        CompletableFuture<Void> future = smsService.sendSms(phoneNumber, message);
+        try { // FIXME try cath to throw or the best practice
+            future.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
         // Check that the SMS was saved to the repository
         SendModel savedModel = smsRepository.findAll().get(0); // Assuming only one record for simplicity
@@ -68,28 +80,27 @@ public class SmsServiceIntegration {
         String invalidPhoneNumber = "123"; // Invalid phone number
         String message = "Test message";
 
-        // Expect NotificationException when an invalid phone number is passed
-        assertThrows(NotificationException.class, () -> {
-            smsService.sendSms(invalidPhoneNumber, message);
-        });
+        CompletableFuture<Void> future = smsService.sendSms(invalidPhoneNumber, message);
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertThat(exception.getCause() instanceof NotificationException).isEqualTo(true);
     }
 
     @Test
-    public void testSendSingleSmsFailedToSend() {
+    public void testSendSingleSmsFailedToSend() throws InterruptedException, ExecutionException {
         String phoneNumber = "1234567890";
         String message = "Test message";
 
-        // Mock the sendApi method to return false to simulate failure
-        SmsService spyService = org.mockito.Mockito.spy(smsService);
-        org.mockito.Mockito.doReturn(false).when(spyService).sendApi(org.mockito.ArgumentMatchers.any(SendModel.class));
+        doReturn(false).when(smsService).sendApi(any(SendModel.class));
 
-        // Send an SMS and validate that the status is FAILED
-        spyService.sendSms(phoneNumber, message);
 
-        // Check that the SMS was saved to the repository with FAILED status
-        SendModel savedModel = smsRepository.findAll().get(0); // Assuming only one record for simplicity
+        // SMS gönder ve sonucunu bekle
+        CompletableFuture<Void> future = smsService.sendSms(phoneNumber, message);
+        future.get();  // Asenkron işlemin tamamlanmasını bekle
+
+        // Veritabanında kayıtlı SMS'yi bul ve durumunu kontrol et
+        SendModel savedModel = smsRepository.findAll().get(0);  // Tek kayıt olduğunu varsayıyoruz
         assertThat(savedModel.getRecipientPhoneNumber()).isEqualTo(phoneNumber);
-        assertThat(savedModel.getStatus()).isEqualTo(NotificationStatus.FAILED);  // Validate the status is FAILED
+        assertThat(savedModel.getStatus()).isEqualTo(NotificationStatus.FAILED);  // Durumun FAILED olduğunu doğrula
     }
 
     @Test
@@ -98,7 +109,14 @@ public class SmsServiceIntegration {
         String message = "Bulk message";
 
         // Send bulk SMS
-        smsService.sendBulkSms(phoneNumbers, message);
+        CompletableFuture<Void> future = smsService.sendBulkSms(phoneNumbers, message);
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
         // Check that both SMS were saved to the repository
         for (int i = 0; i < phoneNumbers.length; i++) {
@@ -123,10 +141,9 @@ public class SmsServiceIntegration {
             String[] invalidPhoneNumbers = vals[a]; // One invalid phone number
             String message = "Bulk message";
 
-            // Expect NotificationException when an invalid phone number is passed in bulk
-            assertThrows(NotificationException.class, () -> {
-                smsService.sendBulkSms(invalidPhoneNumbers, message);
-            });
+            CompletableFuture<Void> future = smsService.sendBulkSms(invalidPhoneNumbers, message);
+            ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+            assertThat(exception.getCause() instanceof NotificationException).isEqualTo(true);
         }
     }
 
@@ -135,15 +152,11 @@ public class SmsServiceIntegration {
         String phoneNumber = "1234567890";
         String message = "Test message";
 
-        // MongoDB konteynerini kapatarak veritabanı hatasını simüle et
         mongoDBContainer.stop();
+        CompletableFuture<Void> future = smsService.sendSms(phoneNumber, message);
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertThat(exception.getCause() instanceof DatabaseException).isEqualTo(true);
 
-        // Test: veritabanı erişimi başarısız olmalı
-        assertThrows(DatabaseException.class, () -> {
-            smsService.sendSms(phoneNumber, message);
-        });
-
-        // Test bittiğinde MongoDB konteynerini yeniden başlat
         mongoDBContainer.start();
     }
 
