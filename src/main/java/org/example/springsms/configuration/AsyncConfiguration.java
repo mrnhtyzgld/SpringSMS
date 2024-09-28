@@ -18,7 +18,7 @@ public class AsyncConfiguration implements AsyncConfigurer {
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
         executor.setCorePoolSize(2*Runtime.getRuntime().availableProcessors());
         executor.setQueueCapacity(500);
-        executor.setThreadNamePrefix("AsyncThread-");  // Thread ismi
+        executor.setThreadNamePrefix("AsyncThread-");
         executor.initialize();
         return executor;
     }

@@ -10,7 +10,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotificationException.class)
     public ResponseEntity<String> handleNotificationException(Exception ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-        // FIXME there is more
     }
 
 
