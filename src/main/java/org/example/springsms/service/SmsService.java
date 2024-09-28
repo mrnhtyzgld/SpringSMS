@@ -53,7 +53,7 @@ public class SmsService {
         }
 
         try {
-            trySavingToRepository(sendModel, MAX_ATTEMPTS);
+            smsRepository.save(sendModel); // FIXME trySavingToRepo metodunu geçir (async mi olacak?)
         } catch (DataAccessException e) {
             throw new DatabaseException(); // TODO change the explanation
         }
@@ -101,11 +101,10 @@ public class SmsService {
 
         for (SendModel sendModel : sendBulkModel.getSendModels()) {
             try {
-                trySavingToRepository(sendModel, MAX_ATTEMPTS);
+                smsRepository.save(sendModel); // FIXME trySavingToRepo metodunu geçir (async mi olacak?)
             } catch (DataAccessException e) {
                 throw new DatabaseException(e.getMessage() + "\n" + e.getCause() + "\n" + e.fillInStackTrace());
             }
-            System.out.println(sendModel.getStatus());
         }
         return CompletableFuture.completedFuture(null);
     }

@@ -54,19 +54,13 @@ public class SmsServiceIntegration {
 
 
     @Test
-    public void testSendSingleSmsSuccess() {
+    public void testSendSingleSmsSuccess() throws ExecutionException, InterruptedException {
         String phoneNumber = "1234567890";
         String message = "Test message";
 
         // Send an SMS and validate that it was sent successfully
         CompletableFuture<Void> future = smsService.sendSms(phoneNumber, message);
-        try { // FIXME try cath to throw or the best practice
-            future.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        future.get();
 
         // Check that the SMS was saved to the repository
         SendModel savedModel = smsRepository.findAll().get(0); // Assuming only one record for simplicity
@@ -104,19 +98,13 @@ public class SmsServiceIntegration {
     }
 
     @Test
-    public void testSendBulkSmsSuccess() {
+    public void testSendBulkSmsSuccess() throws ExecutionException, InterruptedException {
         String[] phoneNumbers = {"1234567890", "0987654321"};
         String message = "Bulk message";
 
         // Send bulk SMS
         CompletableFuture<Void> future = smsService.sendBulkSms(phoneNumbers, message);
-        try {
-            future.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        future.get();
 
         // Check that both SMS were saved to the repository
         for (int i = 0; i < phoneNumbers.length; i++) {
