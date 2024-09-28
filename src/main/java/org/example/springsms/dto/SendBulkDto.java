@@ -1,7 +1,11 @@
 package org.example.springsms.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 public class SendBulkDto {
+    @NotNull
     private String[] phoneNumbers;
+    @NotNull
     private String message;
     public SendBulkDto(String[] phoneNumbers, String message) {
         this.phoneNumbers = phoneNumbers;

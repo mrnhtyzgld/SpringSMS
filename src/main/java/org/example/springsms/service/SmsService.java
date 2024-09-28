@@ -68,7 +68,6 @@ public class SmsService {
 
     @Async
     public CompletableFuture<Void> sendBulkSms(String[] phoneNumbers, String message) {
-        // FIXME async for loops
         SendBulkModel sendBulkModel = new SendBulkModel.Builder()
                 .recipientPhoneNumbers(phoneNumbers)
                 .message(message)
@@ -154,7 +153,7 @@ public class SmsService {
     public boolean sendApi(SendModel sm) {
         // api
 
-        return true;
-        //return new Random().nextBoolean();
+        //return true;
+        return new Random().nextBoolean();
     }
 }

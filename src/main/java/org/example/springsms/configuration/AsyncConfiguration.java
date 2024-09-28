@@ -17,15 +17,14 @@ public class AsyncConfiguration implements AsyncConfigurer {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
         executor.setCorePoolSize(2*Runtime.getRuntime().availableProcessors());
-        executor.setQueueCapacity(500);  // İşlemlerin kuyruğa alınacağı kapasite
+        executor.setQueueCapacity(500);
         executor.setThreadNamePrefix("AsyncThread-");  // Thread ismi
         executor.initialize();
-        return executor;  // Özelleştirilmiş ThreadPoolTaskExecutor döndür
+        return executor;
     }
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        // Asenkron metotlarda meydana gelen yakalanmamış hataları yönetecek handler
         return (throwable, method, obj) -> {
             System.out.println("Asenkron hata: " + throwable.getMessage());
         };
