@@ -13,6 +13,7 @@ public class SendModel {
     private LocalDateTime timestamp;
 
 
+    public SendModel() {}
     private SendModel(Builder builder) {
         this.id = builder.id;
         this.recipientPhoneNumber = builder.recipientPhoneNumber;

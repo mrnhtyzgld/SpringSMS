@@ -6,22 +6,47 @@ import org.example.springsms.model.NotificationStatus;
 import org.example.springsms.model.SendModel;
 import org.example.springsms.repository.SMSRepository;
 import org.example.springsms.service.SmsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
+@Testcontainers
 public class SmsServiceIntegration {
+
+    @Container
+    private static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0");
+
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+    }
 
     @Autowired
     private SmsService smsService;
 
     @Autowired
     private SMSRepository smsRepository;
+
+    @BeforeEach
+    public void cleanDatabase() {
+        smsRepository.deleteAll();  // Veritabanını her testten önce temizle
+    }
+
 
     @Test
     public void testSendSingleSmsSuccess() {
@@ -86,13 +111,23 @@ public class SmsServiceIntegration {
 
     @Test
     public void testSendBulkSmsInvalidPhoneNumber() {
-        String[] invalidPhoneNumbers = {"123", "0987654321"}; // One invalid phone number
-        String message = "Bulk message";
+        String[][] vals = {{"1".repeat(10), "1".repeat(10), "3".repeat(11)},
+                {"2".repeat(10), "2".repeat(9), "9".repeat(10)},
+                {"3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), "3".repeat(10), null},
+                {"3".repeat(10), null},
+                {"4".repeat(10), ""}};
 
-        // Expect NotificationException when an invalid phone number is passed in bulk
-        assertThrows(NotificationException.class, () -> {
-            smsService.sendBulkSms(invalidPhoneNumbers, message);
-        });
+
+        for (int a = 0; a < vals.length; a++)
+        {
+            String[] invalidPhoneNumbers = vals[a]; // One invalid phone number
+            String message = "Bulk message";
+
+            // Expect NotificationException when an invalid phone number is passed in bulk
+            assertThrows(NotificationException.class, () -> {
+                smsService.sendBulkSms(invalidPhoneNumbers, message);
+            });
+        }
     }
 
     @Test
@@ -100,13 +135,17 @@ public class SmsServiceIntegration {
         String phoneNumber = "1234567890";
         String message = "Test message";
 
-        // Simulate a database failure
-        SMSRepository spyRepository = org.mockito.Mockito.spy(smsRepository);
-        org.mockito.Mockito.doThrow(DataAccessException.class).when(spyRepository).save(org.mockito.ArgumentMatchers.any(SendModel.class));
+        // MongoDB konteynerini kapatarak veritabanı hatasını simüle et
+        mongoDBContainer.stop();
 
-        // Expect DatabaseException when database fails
+        // Test: veritabanı erişimi başarısız olmalı
         assertThrows(DatabaseException.class, () -> {
             smsService.sendSms(phoneNumber, message);
         });
+
+        // Test bittiğinde MongoDB konteynerini yeniden başlat
+        mongoDBContainer.start();
     }
+
+
 }

@@ -38,9 +38,13 @@ public class SmsService {
         }
 
 
-        boolean succeess = sendApi(sendModel);
-        
-        if (succeess) {
+        boolean success = sendApi(sendModel);
+
+        if (success) System.out.println("success on bulk method");
+        if (!success) System.out.println("fail on bulk method");
+
+
+        if (success) {
             sendModel.setStatus(NotificationStatus.SENT);
         }
         else {
@@ -48,7 +52,11 @@ public class SmsService {
         }
 
         try {
+            System.out.println("saving to repo");
+
             trySavingToRepository(sendModel, MAX_ATTEMPTS);
+            System.out.println("saved to repo");
+
         } catch (DataAccessException e) {
             throw new DatabaseException(); // TODO change the explanation
         }
@@ -70,18 +78,36 @@ public class SmsService {
                 throw new NotificationException("recipientPhoneNumber");
             }
         }
-        if (! isValidMessage(sendBulkModel.getMessage())) {
+        if (!isValidMessage(sendBulkModel.getMessage())) {
             throw new NotificationException("message");
         }
 
-        try {
-            for (int a = 0; a < sendBulkModel.getRecipientCount(); a++) {
-                smsRepository.save(sendBulkModel.getSendModel(a));
+        for (SendModel sendModel : sendBulkModel.getSendModels()) {
+            boolean success = sendApi(sendModel);
+            if (success) sendModel.setStatus(NotificationStatus.SENT);
+            else sendModel.setStatus(NotificationStatus.FAILED);
+        }
+        boolean isFullySaved = true;
+        for (SendModel sendModel : sendBulkModel.getSendModels())
+            if (sendModel.getStatus() != NotificationStatus.SENT) {
+                isFullySaved = false;
+                break;
             }
-        } catch (DataAccessException e) {
-            throw new DatabaseException(e.getMessage()+"\n"+e.getCause()+"\n"+e.fillInStackTrace());
+
+        if (isFullySaved) {
+            sendBulkModel.setStatus(NotificationStatus.SENT);
+        } else {
+            sendBulkModel.setStatus(NotificationStatus.FAILED);
         }
 
+        for (SendModel sendModel : sendBulkModel.getSendModels()) {
+            try {
+                trySavingToRepository(sendModel, MAX_ATTEMPTS);
+            } catch (DataAccessException e) {
+                throw new DatabaseException(e.getMessage() + "\n" + e.getCause() + "\n" + e.fillInStackTrace());
+            }
+            System.out.println(sendModel.getStatus());
+        }
     }
 
     private void trySavingToRepository(SendModel sendModel, int maxAttempts) {
@@ -111,6 +137,6 @@ public class SmsService {
         // api
 
         return true;
-        //return (Math.random() > 0.5);
+        //return false;
     }
 }
