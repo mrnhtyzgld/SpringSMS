@@ -141,8 +141,11 @@ public class SmsServiceIntegration {
         String message = "Test message";
 
         mongoDBContainer.stop();
+
         CompletableFuture<Void> future = smsService.sendSms(phoneNumber, message);
+
         ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+
         assertThat(exception.getCause() instanceof DatabaseException).isEqualTo(true);
 
         mongoDBContainer.start();

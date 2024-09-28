@@ -12,13 +12,16 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SmsService {
 
     public static final int MAX_MSG_LENGTH = 60;
-    public static final int MAX_ATTEMPTS = 5;
+    public static final int MAX_ATTEMPTS_DB = 2;
+    public static final int MAX_ATTEMPTS_API = 10;
 
     @Autowired
     private SMSRepository smsRepository;
@@ -41,22 +44,25 @@ public class SmsService {
         }
 
 
-        boolean success = sendApi(sendModel);
 
-
-
-        if (success) {
-            sendModel.setStatus(NotificationStatus.SENT);
+        int counter = 0;
+        boolean success = false;
+        while (!success && counter<MAX_ATTEMPTS_API) {
+            success = sendApi(sendModel);
+            if (success) {
+                sendModel.setStatus(NotificationStatus.SENT);
+            }
+            else {
+                sendModel.setStatus(NotificationStatus.FAILED);
+            }
+            counter++;
         }
-        else {
-            sendModel.setStatus(NotificationStatus.FAILED);
-        }
 
-        try {
-            smsRepository.save(sendModel); // FIXME trySavingToRepo metodunu geçir (async mi olacak?)
-        } catch (DataAccessException e) {
-            throw new DatabaseException(); // TODO change the explanation
-        }
+
+
+
+        saveToRepo(sendModel, MAX_ATTEMPTS_DB);
+
         return CompletableFuture.completedFuture(null);
     }
 
@@ -82,9 +88,15 @@ public class SmsService {
         }
 
         for (SendModel sendModel : sendBulkModel.getSendModels()) {
-            boolean success = sendApi(sendModel);
-            if (success) sendModel.setStatus(NotificationStatus.SENT);
-            else sendModel.setStatus(NotificationStatus.FAILED);
+            int counter = 0;
+            boolean success = false;
+            while (!success && counter<MAX_ATTEMPTS_API) {
+                success = sendApi(sendModel);
+                if (success)
+                    sendModel.setStatus(NotificationStatus.SENT);
+                else
+                    sendModel.setStatus(NotificationStatus.FAILED);
+            }
         }
         boolean isFullySaved = true;
         for (SendModel sendModel : sendBulkModel.getSendModels())
@@ -100,23 +112,30 @@ public class SmsService {
         }
 
         for (SendModel sendModel : sendBulkModel.getSendModels()) {
-            try {
-                smsRepository.save(sendModel); // FIXME trySavingToRepo metodunu geçir (async mi olacak?)
-            } catch (DataAccessException e) {
-                throw new DatabaseException(e.getMessage() + "\n" + e.getCause() + "\n" + e.fillInStackTrace());
-            }
+            saveToRepo(sendModel, MAX_ATTEMPTS_DB);
         }
         return CompletableFuture.completedFuture(null);
     }
 
-    private void trySavingToRepository(SendModel sendModel, int maxAttempts) {
-        // TODO after async try writing this
-        // TODO note that this method can fail also
+    @Async
+    void saveToRepo(SendModel sendModel, int maxAttempts) {
+        int counter = 0;
+        while (counter < maxAttempts) {
+            try {
+                smsRepository.save(sendModel);
+                break;
+            } catch (DataAccessException e) {
+                if (++counter >= maxAttempts) {
+                    throw new DatabaseException(e.getMessage() + "\n" + e.getCause() + "\n" + e.fillInStackTrace());
+                } else {
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException ex) {
+                        throw new DatabaseException();
+                    }
+                }
+            }
 
-        try {
-            smsRepository.save(sendModel);
-        } catch (DataAccessException e) {
-            throw new DatabaseException(e.getMessage()+"\n"+e.getCause()+"\n"+e.fillInStackTrace());
         }
 
     }
@@ -136,6 +155,6 @@ public class SmsService {
         // api
 
         return true;
-        //return false;
+        //return new Random().nextBoolean();
     }
 }
