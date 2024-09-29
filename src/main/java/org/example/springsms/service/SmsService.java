@@ -125,7 +125,7 @@ public class SmsService {
                 break;
             } catch (DataAccessException e) {
                 if (++counter >= maxAttempts) {
-                    throw new DatabaseException(e.getMessage() + "\n" + e.getCause() + "\n" + e.fillInStackTrace());
+                    throw new DatabaseException();
                 } else {
                     try {
                         TimeUnit.SECONDS.sleep(1);
