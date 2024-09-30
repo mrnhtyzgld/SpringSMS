@@ -95,6 +95,7 @@ public class SmsService {
                     sendModel.setStatus(NotificationStatus.SENT);
                 else
                     sendModel.setStatus(NotificationStatus.FAILED);
+                counter++;
             }
         }
         boolean isFullySaved = true;
